@@ -26,11 +26,10 @@ index <- which(is.na(Join_Intersection$longitude) == FALSE)
 Clean_Join_Intersection <- Join_Intersection[index, ]
 
 #select unique streets name
-streets=nyc%>%select(contains("Street.Name"))%>%distinct()
+streets.name=nyc%>%select(contains("Street.Name"))%>%distinct()
 #name streets name as "Address"
-names(streets)="streets"
-#merge streets name from 'nyc' to column 'streets'
-Clean_Join_Intersection<-left_join(Clean_Join_Intersection, streets, by="streets")
+names(streets.name)="streets"
+Clean_Join_Intersection=left_join(streets.name, Clean_Join_Intersection, by="streets")
 
 #plot intersection borough graph
 plot(Clean_Join_Intersection$longitude,Clean_Join_Intersection$latitude,cex = 0.1, col=as.factor(Clean_Join_Intersection$intersection_Borough))
