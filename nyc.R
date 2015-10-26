@@ -44,9 +44,9 @@ invisible(dir.create('data/'))
 keeper_columns = c('Unique.Key', 'Incident.Zip', 'Incident.Address', 'Street.Name', 'Cross.Street.1', 
                    'Cross.Street.2', 'Intersection.Street.1', 'Intersection.Street.2', 'Address.Type',
                    'Borough')
-# JASON: 
-nyc = fread('nyc_311.csv', select=keeper_columns, data.table=F)
-# SAXON: nyc = fread('/home/vis/cr173/Sta523/data/nyc/nyc_311.csv', select=keeper_columns, data.table=F)
+# JASON: nyc = fread('nyc_311.csv', select=keeper_columns, data.table=F)
+# SAXON: 
+nyc = fread('/home/vis/cr173/Sta523/data/nyc/nyc_311.csv', select=keeper_columns, data.table=F)
 
 # Remove `nyc` rows with NEITHER $ZIP code NOR $Borough.
 nyc = nyc[!(nyc$Incident.Zip=='' & nyc$Borough=='Unspecified'),]
@@ -124,10 +124,10 @@ nyc = nyc[valid_rows,]
 clean_but_keep('nyc')
 
 # Read in `intersections` shapefile and extract the coordinates and attached data into `data`.
-# JASON: 
-inter = readOGR(paste0(getwd(), '/intersections'), 'intersections', stringsAsFactors=F)
-# SAXON: inter = readOGR(paste0(path.expand('~cr173'), '/Sta523/data/nyc/intersections'), 
-#                        'intersections', stringsAsFactors=F)
+# JASON: inter = readOGR(paste0(getwd(), '/intersections'), 'intersections', stringsAsFactors=F)
+# SAXON: 
+inter = readOGR(paste0(path.expand('~cr173'), '/Sta523/data/nyc/intersections'), 
+                       'intersections', stringsAsFactors=F)
 data = inter@data
 data = cbind(data, coordinates(inter))
 
@@ -220,9 +220,9 @@ geocoded_unique = distinct(geocoded, Incident.Address)
 # Clean up.
 clean_but_keep('geocoded_unique')
 
-# JASON: 
-load('pluto.Rdata')
-# SAXON: load(path.expand('/home/vis/cr173/Sta523/data/nyc/pluto/pluto.Rdata'))
+# JASON: load('pluto.Rdata')
+# SAXON: 
+load(path.expand('/home/vis/cr173/Sta523/data/nyc/pluto/pluto.Rdata'))
 colnames(pluto)[3] = 'Incident.Address'
 full = left_join(geocoded_unique, pluto, by='Incident.Address')
 
