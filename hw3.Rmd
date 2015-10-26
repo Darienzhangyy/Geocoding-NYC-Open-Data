@@ -1,0 +1,18 @@
+---
+title: "hw 3"
+author: "Eclectic Eagle Scouts"
+date: "10/26/2015"
+output: pdf_document
+---
+
+a description of any and all cleaning / subsetting / etc. that was done to the data, as well as a description of your geocoding approach(es) and a discussion of how successful each was:
+
+
+We extract columns from nyc.311csv file that contains `Unique.Key`, any column that contains `Address` and `Borough` and clean up those address columns as much as possible. We implement the following procedures: 
+
+(1) remove `nyc` rows with NEITHER $ZIP code NOR $Borough; (2) remove `nyc` rows with non-empty $ZIP code values of less than 5 characters AND no assigned $Borough; (3) Extract the first 5 characters of all 9- and 10-character $ZIP code values, which are likely ZIP+4 values; (4) Assign NAs to all $ZIP code values not containing exactly 5 digits. Number of observations dropps from more than 10 million to 9.7 million after these four steps. (5) For all non-NA $ZIP code values with at least one $Borough value, determine the most common such $Borough value, and reassign the $Borough value of corresponding entries in `nyc` accordingly; (6) Remove `nyc` rows WITHOUT informative $Borough, $ZIP, or $Incident.Address values and rows which contain NAs for $Borough, $ZIP, AND $Incident.Address; (7) Subset `nyc`, keeping rows with EITHER a street and cross street, two intersection streets, or an incident address.
+
+We then download a CSV file online that contains US ZIP codes, cities, states, latitude, and longitude, and clean those columns. With the file we subset `zip` to the New York rows, with columns for ZIP code, locale, latitude, and longitude. We then merge the ZIP code-based latitude and longitude coordinates into `nyc`. This step helps match each address on `nyc` match to a lattitude and longitude according to the zip code. 
+
+In the following steps we frequently clean up other files and only retain useful files in the environment. 
+
