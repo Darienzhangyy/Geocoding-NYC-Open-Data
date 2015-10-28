@@ -121,7 +121,7 @@ valid_rows = sort(unique(c(street_cross, intersection, has_address)))
 nyc = nyc[valid_rows,]
 
 # Clean up, retaining `nyc` data frame.
-clean_but_keep('nyc')
+#clean_but_keep('nyc')
 
 # Read in `intersections` shapefile and extract the coordinates and attached data into `data`.
 # JASON: inter = readOGR(paste0(getwd(), '/intersections'), 'intersections', stringsAsFactors=F)
@@ -187,7 +187,7 @@ standardize_streets = function(col) {
 data[,3:4] = apply(data[,3:4], 2, standardize_streets)
 
 # Clean up.
-clean_but_keep(c('nyc', 'data'))
+# clean_but_keep(c('nyc', 'data'))
 
 # Merge `nyc` and `data`, matching $Street.Name to $street_1 or $street_2 and 
 # $Cross.Street.1 to $street_2 or $street_1.
@@ -200,7 +200,7 @@ p2 = merge(nyc, data,
 h1 = rbind(p1, p2)
 
 # Clean up.
-clean_but_keep(c('nyc', 'data', 'h1'))
+# clean_but_keep(c('nyc', 'data', 'h1'))
 
 # Merge `nyc` and `data`, matching $Intersection.Street.1 to $street_1 or $street_2 and 
 # $Intersection.Street.2 to $street_2 or $street_1.
@@ -209,7 +209,7 @@ p2 = merge(nyc, data, by.x=c('Intersection.Street.1', 'Intersection.Street.2'), 
 h2 = rbind(p1, p2)
 
 # Clean up.
-clean_but_keep(c('h1', 'h2'))
+# clean_but_keep(c('h1', 'h2'))
 
 # Merge `nyc` and `data` into data frame called `geocoded` and write to disk.
 geocoded = rbind(h1, h2)
@@ -218,7 +218,7 @@ geocoded = rbind(h1, h2)
 geocoded_unique = distinct(geocoded, Incident.Address)
 
 # Clean up.
-clean_but_keep('geocoded_unique')
+# clean_but_keep('geocoded_unique')
 
 # JASON: load('pluto.Rdata')
 # SAXON: 
@@ -227,29 +227,37 @@ colnames(pluto)[3] = 'Incident.Address'
 full = left_join(geocoded_unique, pluto, by='Incident.Address')
 
 # Clean up.
-clean_but_keep('full')
+# clean_but_keep('full')
 
 # Calculate mean Pluto-sourced latitude and longitude coordinates for all rows sharing 
 # the same $Incident.Address and $Borough.y values.
-pluto_mean = full %>%
-  filter(!is.na(x)) %>%
-  group_by(Incident.Address, Borough.y) %>%
-  summarise(Longitude=mean(x, na.rm=T), Latitude=mean(y, na.rm=T))
+# pluto_mean = full %>%
+#  filter(!is.na(x)) %>%
+#  group_by(Incident.Address, Borough.y) %>%
+#  summarise(Longitude=mean(longitude, na.rm=T), Latitude=mean(latitude, na.rm=T))
 
 # Calculate mean Intersections-sourced latitude and longitude coordinates for all rows
 # sharing the same $Incident.Address and $Borough.y values.
-inter_mean = full %>%
-  filter(is.na(x)) %>%
-  group_by(Incident.Address, Borough.x) %>%
-  summarise(Longitude=mean(longitude, na.rm=T), Latitude=mean(latitude, na.rm=T))
+#inter_mean = full %>%
+#  filter(!is.na(x)) %>%
+#  group_by(Incident.Address, Borough.x) %>%
+#  summarise(Longitude=mean(longitude, na.rm=T), Latitude=mean(latitude, na.rm=T))
 
 # Merge `pluto_mean` and `inter_mean` into one data frame.
-colnames(pluto_mean)[1:2] = colnames(inter_mean)[1:2] = c('Address', 'Borough.')
-full = rbind(pluto_mean, inter_mean)
-full$Borough = mapvalues(full$Borough., 
-                         from=sort(unique(full$Borough.)), 
-                         to=c('Brooklyn', 'Bronx', 'Brooklyn', 'Bronx', 'Manhattan', 
-                              'Manhattan', 'Queens', 'Queens', 'Staten Island', 'Staten Island'))
+# colnames(pluto_mean)[1:2] = colnames(inter_mean)[1:2] = c('Address', 'Borough.')
+# full = rbind(pluto_mean, inter_mean)
+full$Borough = mapvalues(full$Borough.y, 
+                         from=sort(unique(full$Borough.y)), 
+                         to=c('Brooklyn', 'Bronx', 'Manhattan', 
+                              'Queens', 'Staten Island'))
+full$Borough[is.na(full$Borough.y)] = mapvalues(full$Borough.x[is.na(full$Borough.y)], 
+                         from=sort(unique(full$Borough.x)), 
+                         to=c('Bronx', 'Brooklyn', 'Manhattan', 
+                              'Queens', 'Staten Island'))
+full$Longitude = full$x
+full$Latitude = full$y
+full$Longitude[is.na(full$x)] = full$longitude[is.na(full$x)]
+full$Latitude[is.na(full$y)] = full$latitude[is.na(full$y)]
 full$Area = full$Borough %>% as.factor %>% as.numeric
 
 # Plot locations with colors corresponding to boroughs.
