@@ -7,12 +7,23 @@ output: pdf_document
 
 a description of any and all cleaning / subsetting / etc. that was done to the data, as well as a description of your geocoding approach(es) and a discussion of how successful each was:
 
+To clean the data in nyc.311csv as much as possible while keeping address information as complete as possible, we apply a combination of methods (subsetting, removing NA values, etc.) to `nyc`. We then apply gecoding approaches to the `intersection`, and `pluto.Rdata` and finally we merge data from these cleaned datasets and produce a graph of New York City. 
 
-We extract columns from nyc.311csv file that contains `Unique.Key`, any column that contains `Address` and `Borough` and clean up those address columns as much as possible. We implement the following procedures: 
+To clean up the data, we extract columns from nyc.311csv file that contains `Unique.Key`, any column that contains `Address` and `Borough` and clean up those address columns as much as possible. We implement the following procedures: 
 
-(1) remove `nyc` rows with neither $ZIP code nor $Borough; (2) remove `nyc` rows with non-empty $ZIP code values of less than 5 characters AND no assigned $Borough; (3) Extract the first 5 characters of all 9- and 10-character $ZIP code values, which are likely ZIP+4 values; (4) Assign NAs to all $ZIP code values not containing exactly 5 digits. Number of observations dropps from more than 10 million to 9.7 million after these four steps. (5) For all non-NA $ZIP code values with at least one $Borough value, determine the most common such $Borough value, and reassign the $Borough value of corresponding entries in `nyc` accordingly; (6) Remove `nyc` rows WITHOUT informative $Borough, $ZIP, or $Incident.Address values and rows which contain NAs for $Borough, $ZIP, AND $Incident.Address; (7) Subset `nyc`, keeping rows with EITHER a street and cross street, two intersection streets, or an incident address.
+(1) remove `nyc` rows with neither $ZIP code nor $Borough; (2) remove `nyc` rows with non-empty $ZIP code values of less than 5 characters AND no assigned $Borough; (3) Extract the first 5 characters of all 9- and 10-character $ZIP code values, which are likely ZIP+4 values; (4) Assign NAs to all $ZIP code values not containing exactly 5 digits. Number of observations dropps from more than 10 million to 9.7 million after these four steps. (5) For all non-NA $ZIP code values with at least one $Borough value, determine the most common such $Borough value, and reassign the $Borough value of corresponding entries in `nyc` accordingly; (6) Remove `nyc` rows WITHOUT informative $Borough, $ZIP, or $Incident.Address values and rows which contain NAs for $Borough, $ZIP, AND $Incident.Address; (7) Subset `nyc`, keeping rows with EITHER a street and cross street, two intersection streets, or an incident address; (8) clean up other files and only retain the 'nyc' file. 
 
-We then download a CSV file online that contains US ZIP codes, cities, states, latitude, and longitude, and clean those columns. With the file we subset `zip` to the New York rows, with columns for ZIP code, locale, latitude, and longitude. We then merge the ZIP code-based latitude and longitude coordinates into `nyc`. This step helps match each address on `nyc` to a lattitude and longitude according to its zip code. 
+To geocode the data, we use readOGR to read in `intersections` shapefile and extract the coordinates and attached data into `data` and implement the following procedures: 
 
-In the following steps we frequently clean up other files and only retain useful files in the environment. 
+(1) Subset `data`, keeping rows with ONLY two non-boundary listings as streets; (2) Split these intersections into separate columns; (3) Omit duplicate rows and unneeded columns; (4) Rename columns and sort by first and second streets; (5) cleaned up the streets names by implementing a function named standardize_streets() that takes input `col`, a column in `data` data frame and produces an output `the same column`, but with standardized address formatting; (5) CLean up the environment but keep file `nyc` and `data`; 
+(6) Merge `nyc` and `data`, matching $Street.Name to $street_1 or $street_2 and $Cross.Street.1 to $street_2 or $street_1;
+(7)Clean up the files but keep `nyc`, `data` and `h1`from the merge; (8) Merge `nyc` and `data`, matching $Intersection.Street.1 to $street_1 or $street_2 and Intersection.Street.2 to $street_2 or $street_1;
+(9)Clean up the environment but keep `h1` and `h2`; (10)Merge `nyc` and `data` into data frame called `geocoded` and write to disk;
+(11)Remove duplicated addresses and clean up the environment but keep `geocoded_unique`.
+
+To merge data, we then load the pluto.Rdata and join the pluto data with `geocoded_unique` from above and clean up the environment but keep file `full`.Then we implement the following steps: 
+
+(1)Calculate mean Pluto-sourced latitude and longitude coordinates for all rows sharing the same $Incident.Address and $Borough.y values; (2) Calculate mean Intersections-sourced latitude and longitude coordinates for all rows sharing the same $Incident.Address and $Borough.y values; (3)Merge `pluto_mean` and `inter_mean` into one data frame; (4)Plot locations with colors corresponding to boroughs.
+
+
 
