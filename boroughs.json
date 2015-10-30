@@ -4,8 +4,8 @@
         {
             "type": "Feature",
             "properties": {
-                "Name": "1",
-                "Names": "Brooklyn"
+                "Name": "Brooklyn",
+                "NA": "Brooklyn"
             },
             "geometry": {
                 "type": "MultiPolygon",
@@ -5080,8 +5080,8 @@
         {
             "type": "Feature",
             "properties": {
-                "Name": "2",
-                "Names": "Bronx"
+                "Name": "Bronx",
+                "NA": "Bronx"
             },
             "geometry": {
                 "type": "MultiPolygon",
@@ -8788,8 +8788,8 @@
         {
             "type": "Feature",
             "properties": {
-                "Name": "3",
-                "Names": "Manhattan"
+                "Name": "Manhattan",
+                "NA": "Manhattan"
             },
             "geometry": {
                 "type": "MultiPolygon",
@@ -13376,8 +13376,8 @@
         {
             "type": "Feature",
             "properties": {
-                "Name": "4",
-                "Names": "Queens"
+                "Name": "Queens",
+                "NA": "Queens"
             },
             "geometry": {
                 "type": "MultiPolygon",
@@ -26074,8 +26074,8 @@
         {
             "type": "Feature",
             "properties": {
-                "Name": "5",
-                "Names": "Staten Island"
+                "Name": "Staten Island",
+                "NA": "Staten Island"
             },
             "geometry": {
                 "type": "MultiPolygon",
