@@ -59,27 +59,36 @@ short_to_long = c("BK"="Brooklyn",
 
 # sample from the data
 Samp <- Join_Street_clean[sample(1:nrow(Join_Street_clean), 2000, replace=FALSE),]
-test <- Join_Street_clean[sample(1:nrow(Join_Street_clean), 5000, replace=FALSE),]
+test <- Join_Street_clean[sample(1:nrow(Join_Street_clean), 1000, replace=FALSE),]
 #SVM
-SvmNyc <- svm(as.numeric(as.factor(Borough)) ~ x + y, data = Samp)
+SvmNyc <- svm(as.factor(Borough) ~ x + y, data = Samp, cost= 28000, gamma=2)
+SvmNyc1 <- svm(as.factor(Borough) ~ x + y, data = Join_Street_clean, cost= 28000, gamma=2)
 
 
 
 
 # make predictions
 pred_locs = data.frame(xyFromCell(r, 1:250000))
-names(pred_locs) = c("long","lat")
+names(pred_locs) = c("x","y")#match name in the svm model
 
-pred = predict(SvmNyc,test)
+pred = predict(SvmNyc1,pred_locs)
 r[] = pred
-
+plot(r)
 ## Create Polygons
 
 library(rgeos)
 poly = rasterToPolygons(r,dissolve=TRUE)
 
 
-plot(poly)
+
+names(poly@data) = "Name"
+poly@data$Names = short_to_long[levels(pred)]
+
+source("write_geojson.R")
+write_geojson(poly,"boroughs.json")
+
+
+
 
 
 
