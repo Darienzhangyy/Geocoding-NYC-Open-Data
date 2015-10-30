@@ -18,7 +18,7 @@ clean_but_keep = function(objects=NULL) {
 
 # Create list of required packages.
 packages_required = list('rvest', 'magrittr', 'stringr', 'plyr', 'ggplot2', 'data.table', 
-                         'rgdal', 'dplyr', 'lubridate', 'foreign', 'kernlab', 'e1071')
+                         'rgdal', 'dplyr', 'lubridate', 'foreign', 'class')
 
 
 # package_checker()
@@ -267,7 +267,25 @@ nyc_map = ggplot(full, aes(x=Longitude, y=Latitude, color=Borough)) +
 nyc_map
 
 # Clean up.
-clean_but_keep('full')
+# clean_but_keep('full')
 
-# svp = ksvm(Borough~Longitude+Latitude, data=full, type='C-svc', kernel='splinedot', C=1)
-# test = svm(Area~Longitude+Latitude, data=full)
+# Split the data into training and test sets, excluding intersections-based data
+# from the training set.
+set.seed(123)
+keep1 = which(full$Longitude>(-74.05) & full$Longitude<(-74.01) & full$Latitude>(40.68) & full$Latitude<(40.70) & full$Borough=='Manhattan')
+keep2 = which(full$Longitude>(-73.95) & full$Longitude<(-73.90) & full$Latitude>(40.79) & full$Latitude<(40.81) & full$Borough=='Manhattan')
+keep3 = which(full$Longitude>(-73.95) & full$Longitude<(-73.87) & full$Latitude>(40.50) & full$Latitude<(40.57) & full$Borough=='Queens')
+sub = sample(which(!is.na(full$x)), size=floor(0.5*length(which(!is.na(full$x)))))
+sub = c(sub, keep1, keep2, keep3)
+train = full[sub, c('Longitude', 'Latitude')]
+test = full[-sub, c('Longitude', 'Latitude')]
+
+# Run k-nearest neighbors with k=5.
+knn_fit = knn(train, test, cl=full$Borough[sub], k=5)
+full$knn = full$Borough
+full$knn[-sub] = as.character(knn_fit)
+
+knn_map = ggplot(full, aes(x=Longitude, y=Latitude, color=knn)) +
+  geom_point(size=1, alpha=.5, shape=20) + 
+  coord_map()
+knn_map
