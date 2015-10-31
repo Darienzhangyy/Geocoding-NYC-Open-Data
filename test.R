@@ -31,7 +31,7 @@ short_to_long = c("BK"="Brooklyn",
                   "QN"="Queens",
                   "SI"="Staten Island")
 
-sample.1=full_data[sample(1:nrow(full_data), 8000, replace=FALSE),]
+sample.1=full_data[sample(1:nrow(full_data), 15000, replace=FALSE),]
 
 SvmNyc <- svm(as.factor(knn) ~Longitude + Latitude, data = sample.1, cost= 20000, gamma=2)
 
@@ -53,7 +53,8 @@ r[] = pred
 poly = rasterToPolygons(r,dissolve=TRUE)
 
 names(poly@data) = "Name"
-poly@data$Name = levels(sample.1$knn)
+poly = poly[1:5,]
 
+poly@data$Name = sort(levels(sample.1$knn)[-1])
 source("write_geojson.R")
 write_geojson(poly,"boroughs.json")
