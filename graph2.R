@@ -39,9 +39,9 @@ invisible(lapply(packages_required, package_checker))
 # Read in the NYC311 data set to a data frame called `nyc` and extract address column.
 nyc = fread('/home/vis/cr173/Sta523/data/nyc/nyc_311.csv', data.table=F)
 addr = nyc %>%
-  select(contains('Address')) %>%
+  select(contains('Incident.Address')) %>%
   filter(Incident.Address!='')
-colnames(addr)[1] = 'Address'
+colnames(addr) = 'Address'
 
 # Read in the Pluto data.
 load(path.expand('/home/vis/cr173/Sta523/data/nyc/pluto/pluto.Rdata'))
@@ -55,7 +55,7 @@ clean_data = join_street %>%
   filter(!is.na(x)) %>%
   group_by(Address, Borough) %>%
   summarise(x=mean(x), y=mean(y))
-colnames(clean_data)[2:3] = c('Longitude', 'Latitude')
+colnames(clean_data)[3:4] = c('Longitude', 'Latitude')
 
 # Clean up.
 clean_but_keep('clean_data')
