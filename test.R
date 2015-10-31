@@ -53,7 +53,7 @@ r[] = pred
 poly = rasterToPolygons(r,dissolve=TRUE)
 
 names(poly@data) = "Name"
-poly@data$Name = short_to_long[levels(pred)]
+poly@data$Name = levels(sample.1$knn)
 
 source("write_geojson.R")
 write_geojson(poly,"boroughs.json")
