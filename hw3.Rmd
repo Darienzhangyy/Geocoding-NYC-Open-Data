@@ -16,21 +16,24 @@ To clean up the data, we extract columns from nyc.311csv file that contains `Uni
 To geocode the data, we use readOGR to read in `intersections` shapefile and extract the coordinates and attached data into `data` and implement the following procedures: 
 
 (1) Subset `data`, keeping rows with ONLY two non-boundary listings as streets; (2) Split these intersections into separate columns; (3) Omit duplicate rows and unneeded columns; (4) Rename columns and sort by first and second streets; (5) cleaned up the streets names by implementing a function named standardize_streets() that takes input `col`, a column in `data` data frame and produces an output `the same column`, but with standardized address formatting; (5) CLean up the environment but keep file `nyc` and `data`; 
-(6) Merge `nyc` and `data`, matching $Street.Name to $street_1 or $street_2 and $Cross.Street.1 to $street_2 or $street_1;
-(7)Clean up the files but keep `nyc`, `data` and `h1`from the merge; (8) Merge `nyc` and `data`, matching $Intersection.Street.1 to $street_1 or $street_2 and Intersection.Street.2 to $street_2 or $street_1;
+(6) Merge `nyc` and `data`, matching `$Street.Name` to `$street_1` or `$street_2` and `$Cross.Street.1` to `$street_2` or `$street_1`;
+(7)Clean up the files but keep `nyc`, `data` and `h1`from the merge; (8) Merge `nyc` and `data`, matching `$Intersection.Street.1` to `$street_1` or `$street_2` and `$Intersection.Street.2` to `$street_2` or `$street_1`;
 (9)Clean up the environment but keep `h1` and `h2`; (10)Merge `nyc` and `data` into data frame called `geocoded` and write to disk;
 (11)Remove duplicated addresses and clean up the environment but keep `geocoded_unique`.
 
 To merge data, we then load the pluto.Rdata and join the pluto data with `geocoded_unique` from above and clean up the environment but keep file `full`.Then we implement the following steps: 
 
-(1)Calculate mean Pluto-sourced latitude and longitude coordinates for all rows sharing the same $Incident.Address and $Borough.y values; (2) Calculate mean Intersections-sourced latitude and longitude coordinates for all rows sharing the same $Incident.Address and $Borough.y values; (3)Merge `pluto_mean` and `inter_mean` into one data frame; (4)Plot locations with colors corresponding to boroughs.
+(1)Calculate mean Pluto-sourced latitude and longitude coordinates for all rows sharing the same `$Incident.Address` and `$Borough.y` values; (2) Calculate mean Intersections-sourced latitude and longitude coordinates for all rows sharing the same `$Incident.Address` and `$Borough.y` values; (3)Merge `pluto_mean` and `inter_mean` into one data frame; (4)Plot locations with colors corresponding to boroughs.
 
 
 **Part 2**
 
 We used the dataframe generated from part 1 to produce JSON file but produced a high score. Therefore we modified our approach to just join the data of incident streets with data of pluto by matching "Address". The code is specified in 'graph.R'. 
 
-
+```{r}
+source(graph2.R)
+plot(poly)
+```
 
 
 **Part 3 visualization**
