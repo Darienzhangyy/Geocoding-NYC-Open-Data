@@ -18,7 +18,8 @@ clean_but_keep = function(objects=NULL) {
 
 # Create list of required packages.
 packages_required = list('rvest', 'magrittr', 'stringr', 'plyr', 'ggplot2', 'data.table', 
-                         'rgdal', 'dplyr', 'lubridate', 'foreign', 'class')
+                         'rgdal', 'dplyr', 'lubridate', 'foreign', 'class', 'grDevices',
+                         'raster', 'spatstat', 'e1071', 'rgeos')
 
 
 # package_checker()
@@ -121,7 +122,7 @@ valid_rows = sort(unique(c(street_cross, intersection, has_address)))
 nyc = nyc[valid_rows,]
 
 # Clean up, retaining `nyc` data frame.
-#clean_but_keep('nyc')
+clean_but_keep('nyc')
 
 # Read in `intersections` shapefile and extract the coordinates and attached data into `data`.
 # JASON: inter = readOGR(paste0(getwd(), '/intersections'), 'intersections', stringsAsFactors=F)
@@ -187,7 +188,7 @@ standardize_streets = function(col) {
 data[,3:4] = apply(data[,3:4], 2, standardize_streets)
 
 # Clean up.
-# clean_but_keep(c('nyc', 'data'))
+clean_but_keep(c('nyc', 'data'))
 
 # Merge `nyc` and `data`, matching $Street.Name to $street_1 or $street_2 and 
 # $Cross.Street.1 to $street_2 or $street_1.
@@ -200,7 +201,7 @@ p2 = merge(nyc, data,
 h1 = rbind(p1, p2)
 
 # Clean up.
-# clean_but_keep(c('nyc', 'data', 'h1'))
+clean_but_keep(c('nyc', 'data', 'h1'))
 
 # Merge `nyc` and `data`, matching $Intersection.Street.1 to $street_1 or $street_2 and 
 # $Intersection.Street.2 to $street_2 or $street_1.
@@ -209,7 +210,7 @@ p2 = merge(nyc, data, by.x=c('Intersection.Street.1', 'Intersection.Street.2'), 
 h2 = rbind(p1, p2)
 
 # Clean up.
-# clean_but_keep(c('h1', 'h2'))
+clean_but_keep(c('h1', 'h2'))
 
 # Merge `nyc` and `data` into data frame called `geocoded` and write to disk.
 geocoded = rbind(h1, h2)
@@ -218,7 +219,7 @@ geocoded = rbind(h1, h2)
 geocoded_unique = distinct(geocoded, Incident.Address)
 
 # Clean up.
-# clean_but_keep('geocoded_unique')
+clean_but_keep('geocoded_unique')
 
 # JASON: load('pluto.Rdata')
 # SAXON: 
@@ -227,25 +228,9 @@ colnames(pluto)[3] = 'Incident.Address'
 full = left_join(geocoded_unique, pluto, by='Incident.Address')
 
 # Clean up.
-# clean_but_keep('full')
+clean_but_keep('full')
 
-# Calculate mean Pluto-sourced latitude and longitude coordinates for all rows sharing 
-# the same $Incident.Address and $Borough.y values.
-# pluto_mean = full %>%
-#  filter(!is.na(x)) %>%
-#  group_by(Incident.Address, Borough.y) %>%
-#  summarise(Longitude=mean(longitude, na.rm=T), Latitude=mean(latitude, na.rm=T))
-
-# Calculate mean Intersections-sourced latitude and longitude coordinates for all rows
-# sharing the same $Incident.Address and $Borough.y values.
-#inter_mean = full %>%
-#  filter(!is.na(x)) %>%
-#  group_by(Incident.Address, Borough.x) %>%
-#  summarise(Longitude=mean(longitude, na.rm=T), Latitude=mean(latitude, na.rm=T))
-
-# Merge `pluto_mean` and `inter_mean` into one data frame.
-# colnames(pluto_mean)[1:2] = colnames(inter_mean)[1:2] = c('Address', 'Borough.')
-# full = rbind(pluto_mean, inter_mean)
+# Merge and standardize borough labels from pluto and intersections into $Borough.
 full$Borough = mapvalues(full$Borough.y, 
                          from=sort(unique(full$Borough.y)), 
                          to=c('Brooklyn', 'Bronx', 'Manhattan', 
@@ -254,38 +239,78 @@ full$Borough[is.na(full$Borough.y)] = mapvalues(full$Borough.x[is.na(full$Boroug
                          from=sort(unique(full$Borough.x)), 
                          to=c('Bronx', 'Brooklyn', 'Manhattan', 
                               'Queens', 'Staten Island'))
+
+# Merge coordinates from pluto and intersections, giving priority to pluto.
 full$Longitude = full$x
 full$Latitude = full$y
 full$Longitude[is.na(full$x)] = full$longitude[is.na(full$x)]
 full$Latitude[is.na(full$y)] = full$latitude[is.na(full$y)]
-full$Area = full$Borough %>% as.factor %>% as.numeric
-
-# Plot locations with colors corresponding to boroughs.
-nyc_map = ggplot(full, aes(x=Longitude, y=Latitude, color=Borough)) +
-  geom_point(size=1, alpha=.5, shape=20) + 
-  coord_map()
-nyc_map
 
 # Clean up.
-# clean_but_keep('full')
+clean_but_keep('full')
 
-# Split the data into training and test sets, excluding intersections-based data
-# from the training set.
+# Set a seed and split the data into training and test sets. 
+# `train` includes 50% of the pluto data and 0% of the intersections data.
 set.seed(123)
-keep1 = which(full$Longitude>(-74.05) & full$Longitude<(-74.01) & full$Latitude>(40.68) & full$Latitude<(40.70) & full$Borough=='Manhattan')
-keep2 = which(full$Longitude>(-73.95) & full$Longitude<(-73.90) & full$Latitude>(40.79) & full$Latitude<(40.81) & full$Borough=='Manhattan')
-keep3 = which(full$Longitude>(-73.95) & full$Longitude<(-73.87) & full$Latitude>(40.50) & full$Latitude<(40.57) & full$Borough=='Queens')
 sub = sample(which(!is.na(full$x)), size=floor(0.5*length(which(!is.na(full$x)))))
+
+# Keep Governor's Island in the training set.
+keep1 = which(full$Longitude>(-74.05) & full$Longitude<(-74.01) & 
+              full$Latitude>(40.68) & full$Latitude<(40.70) & full$Borough=='Manhattan')
+
+# Keep Randalls and Wards Islands in the training set.
+keep2 = which(full$Longitude>(-73.95) & full$Longitude<(-73.90) & 
+              full$Latitude>(40.79) & full$Latitude<(40.81) & full$Borough=='Manhattan')
+              
+# Keep the western tip of the Rockaways in the training set.
+keep3 = which(full$Longitude>(-73.95) & full$Longitude<(-73.87) & 
+              full$Latitude>(40.50) & full$Latitude<(40.57) & full$Borough=='Queens')
 sub = c(sub, keep1, keep2, keep3)
 train = full[sub, c('Longitude', 'Latitude')]
 test = full[-sub, c('Longitude', 'Latitude')]
 
-# Run k-nearest neighbors with k=5.
+# Run k-nearest neighbors with k=5 to reclassify the test set.
 knn_fit = knn(train, test, cl=full$Borough[sub], k=5)
 full$knn = full$Borough
 full$knn[-sub] = as.character(knn_fit)
 
-knn_map = ggplot(full, aes(x=Longitude, y=Latitude, color=knn)) +
-  geom_point(size=1, alpha=.5, shape=20) + 
-  coord_map()
-knn_map
+# Create raster grid for prediction locations.
+r = raster(nrows=500, ncols=500, 
+           xmn=-74.3, xmx=-73.6, 
+           ymn=40.49, ymx=40.92)
+r[] = NA
+pred_locs = data.frame(xyFromCell(r, 1:250000))
+names(pred_locs) = c('Longitude', 'Latitude')
+
+# Reclassify `pred_locs` coordinates falling outside of borough convex hulls as 'NULL'
+# and rbind to `full` borough coordinates, in order to assist svm classification.
+split_full = split(full, full$knn)
+apply_full = lapply(split_full, function(df) { 
+  uniq = distinct(df, Longitude, Latitude)
+  hull = chull(uniq[,c('Longitude', 'Latitude')]) %>% 
+    rev %>% 
+    uniq[.,c('Longitude', 'Latitude')]
+  colnames(hull) = c('x', 'y')
+  bound = owin(poly=hull)
+  isin = inside.owin(x=pred_locs$Longitude, y=pred_locs$Latitude, w=bound)
+  return(isin)
+} )
+combn_full = do.call(cbind, apply_full)
+not_borough = apply(combn_full, 1, function(row) { !any(row) } ) %>%
+  pred_locs[.,] %>% 
+  cbind(., knn='NULL')
+full_data = rbind(not_borough, full[,colnames(not_borough)])
+
+# Fit SVM on a 5% sample and use to predict classification for `pred_locs` grid.
+samp = sample_frac(full_data, 0.05)
+svm_fit = svm(knn ~ Longitude + Latitude + Longitude*Latitude, data=samp, cost=28000, gamma=2)
+pred = predict(svm_fit, pred_locs)
+
+# Create spatial polygons from SVM output and write to disk as GEOJSON file.
+r[] = pred
+poly = rasterToPolygons(r, dissolve=T)
+poly = poly[1:5,]
+names(poly@data) = "Name"
+poly@data$Name = sort(levels(samp$knn)[-1])[c(2,1,3:5)]
+source('write_geojson.R')
+write_geojson(poly, 'boroughs.json')
