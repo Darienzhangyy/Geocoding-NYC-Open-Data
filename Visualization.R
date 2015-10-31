@@ -1,7 +1,7 @@
 library('ggplot2')
 library('ggmap')
 
-#Load complain data
+#Load complain data "with_null.RData"
 load("/Users/andrea/Team5_hw3/with_null.RData")
 
 ## Get New YorK City map
