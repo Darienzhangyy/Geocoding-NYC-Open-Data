@@ -39,6 +39,8 @@ library(rgeos)
 poly = rasterToPolygons(r,dissolve=TRUE)
 
 
+poly = poly[1:5,]
+
 
 names(poly@data) = "Name"
 poly@data$Name = sort(levels(Samp$knn)[-1])
