@@ -28,7 +28,7 @@ To merge data, we then load the pluto.Rdata and join the pluto data with `geocod
 
 **Part 2**
 
-We used the dataframe generated from part 1 to produce JSON file but produced a high score. Therefore we modified our approach to just join the data of incident streets with data of pluto by matching "Address". The code is specified in 'graph.R'. 
+We used the dataframe generated from part 1 to produce JSON file but produced a high score. Therefore we modified our approach to just join the data of incident streets with data of pluto by matching "Address". As a result, we produced a dataframe named `clean_data` that contains longitude, latitude and matched addresses. Then we use the SVM model to fit those data and plot the polygons using the prediction function. The code is specified in 'graph2.R'. 
 
 ```{r}
 source('graph2.R')
