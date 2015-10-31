@@ -40,8 +40,8 @@ poly = rasterToPolygons(r,dissolve=TRUE)
 
 
 
-#names(poly@data) = "Name"
-#poly@data$Name = levels(Samp$knn)
+names(poly@data) = "Name"
+poly@data$Name = sort(levels(Samp$knn_pred)[-1])
 
 setwd("/home/grad/yz273/bootcamp/")
 source("write_geojson.R")
