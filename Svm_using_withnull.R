@@ -18,10 +18,10 @@ r[]=NA
                   #"SI"="Staten Island")
 
 
-Samp <- full_data[sample(1:nrow(full_data), 15000, replace=FALSE),]
+Samp <- full_data[sample(1:nrow(full_data), 20000, replace=FALSE),]
 #SVM
 SvmNyc1 <- svm(as.factor(knn) ~ Longitude + Latitude, data = Samp,
-               cost= 20000, gamma=2)
+               cost= 30000, gamma=2)
 
 
 
@@ -40,10 +40,13 @@ poly = rasterToPolygons(r,dissolve=TRUE)
 
 
 poly = poly[1:5,]
-
-
 names(poly@data) = "Name"
-poly@data$Name = sort(levels(Samp$knn)[-1])
+lev=sort(levels(Samp$knn)[-1])
+temp=lev[2]
+lev[2]=lev[1]
+lev[1]=temp
+poly@data$Name = lev
+
 
 setwd("/home/grad/yz273/bootcamp/")
 source("write_geojson.R")
