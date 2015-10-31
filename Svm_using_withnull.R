@@ -11,11 +11,11 @@ r = raster(nrows=500, ncols=500,
 r[]=NA
 
 
-short_to_long = c("BK"="Brooklyn",
-                  "BX"="Bronx",
-                  "MN"="Manhattan",
-                  "QN"="Queens",
-                  "SI"="Staten Island")
+#short_to_long = c("BK"="Brooklyn",
+                  #"BX"="Bronx",
+                  #"MN"="Manhattan",
+                  #"QN"="Queens",
+                  #"SI"="Staten Island")
 
 
 Samp <- full_data[sample(1:nrow(full_data), 15000, replace=FALSE),]
@@ -41,7 +41,7 @@ poly = rasterToPolygons(r,dissolve=TRUE)
 
 
 names(poly@data) = "Name"
-poly@data$Name = levels(Samp$knn)
+poly@data$Name = sort(levels(Samp$knn)[-1])
 
 setwd("/home/grad/yz273/bootcamp/")
 source("write_geojson.R")
