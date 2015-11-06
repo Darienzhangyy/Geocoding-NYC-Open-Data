@@ -5,13 +5,11 @@ date: "10/26/2015"
 output: pdf_document
 ---
 
-a description of any and all cleaning / subsetting / etc. that was done to the data, as well as a description of your geocoding approach(es) and a discussion of how successful each was:
+To clean the data in `nyc.311csv` as much as possible while keeping address information as complete as possible, we apply a combination of methods (subsetting, removing NA values, etc.) to `nyc`. We then apply gecoding approaches to the `intersection`, and `pluto.Rdata` and finally we merge data from these cleaned datasets and produce a graph of New York City. 
 
-To clean the data in nyc.311csv as much as possible while keeping address information as complete as possible, we apply a combination of methods (subsetting, removing NA values, etc.) to `nyc`. We then apply gecoding approaches to the `intersection`, and `pluto.Rdata` and finally we merge data from these cleaned datasets and produce a graph of New York City. 
+To clean up the data, we extract columns from `nyc.311csv` file that contains `Unique.Key`, any column that contains `Address` and `Borough` and clean up those address columns as much as possible. We implement the following procedures: 
 
-To clean up the data, we extract columns from nyc.311csv file that contains `Unique.Key`, any column that contains `Address` and `Borough` and clean up those address columns as much as possible. We implement the following procedures: 
-
-(1) remove `nyc` rows with neither $ZIP code nor $Borough; (2) remove `nyc` rows with non-empty $ZIP code values of less than 5 characters AND no assigned $Borough; (3) Extract the first 5 characters of all 9- and 10-character $ZIP code values, which are likely ZIP+4 values; (4) Assign NAs to all $ZIP code values not containing exactly 5 digits. Number of observations dropps from more than 10 million to 9.7 million after these four steps. (5) For all non-NA $ZIP code values with at least one $Borough value, determine the most common such $Borough value, and reassign the $Borough value of corresponding entries in `nyc` accordingly; (6) Remove `nyc` rows WITHOUT informative $Borough, $ZIP, or $Incident.Address values and rows which contain NAs for $Borough, $ZIP, AND $Incident.Address; (7) Subset `nyc`, keeping rows with EITHER a street and cross street, two intersection streets, or an incident address; (8) clean up other files and only retain the 'nyc' file. 
+(1) remove `nyc` rows with neither $ZIP code nor $Borough; (2) remove `nyc` rows with non-empty $ZIP code values of less than 5 characters AND no assigned $Borough; (3) Extract the first 5 characters of all 9- and 10-character $ZIP code values, which are likely ZIP+4 values; (4) Assign NAs to all $ZIP code values not containing exactly 5 digits. Number of observations dropps from more than 10 million to 9.7 million after these four steps. (5) For all non-NA $ZIP code values with at least one $Borough value, determine the most common such $Borough value, and reassign the $Borough value of corresponding entries in `nyc` accordingly; (6) Remove `nyc` rows WITHOUT informative $Borough, $ZIP, or $Incident.Address values and rows which contain NAs for $Borough, $ZIP, AND $Incident.Address; (7) Subset `nyc`, keeping rows with EITHER a street and cross street, two intersection streets, or an incident address; (8) clean up other files and only retain the 'nyc' file. In this way, at most addressed errors has been corrected.
 
 To geocode the data, we use readOGR to read in `intersections` shapefile and extract the coordinates and attached data into `data` and implement the following procedures: 
 
@@ -23,22 +21,25 @@ To geocode the data, we use readOGR to read in `intersections` shapefile and ext
 
 To merge data, we then load the pluto.Rdata and join the pluto data with `geocoded_unique` from above and clean up the environment but keep file `full`.Then we implement the following steps: 
 
-(1)Calculate mean Pluto-sourced latitude and longitude coordinates for all rows sharing the same `$Incident.Address` and `$Borough.y` values; (2) Calculate mean Intersections-sourced latitude and longitude coordinates for all rows sharing the same `$Incident.Address` and `$Borough.y` values; (3)Merge `pluto_mean` and `inter_mean` into one data frame; (4)Plot locations with colors corresponding to boroughs.
+(1)Merge and standardize borough labels from pluto and intersections into $Borough; (2)Merge coordinates from pluto and intersections, giving priority to pluto;(3)Produce a new dataframe `full_data` and store it as `with_null.Rdata`.
+
+Finally, in the `with_null.Rdata` there are 84,8867 observations that are extracted and corrected from the original `nyc.311csv` file. Since addresses stored in `full_data`has been mostly cleaned, and longitudes and latitudes has been merged and corrected from `pluto` and `intersections`, the dataframe in `with_null.Rdata` maintains relatively accurate geographic information. 
 
 
 **Part 2**
 
-We used the dataframe generated from part 1 to produce JSON file but produced a high score. Therefore we modified our approach to just join the data of incident streets with data of pluto by matching "Address". As a result, we produced a dataframe named `clean_data` that contains longitude, latitude and matched addresses. We produced that data frame by grouping the data by boroughs and addresses then calculated the corresponding mean of logitude and lattitude for each address. We then used the SVM model to fit those data and plotted the polygons using the prediction function. The code is specified in 'graph2.R'. 
+We used the dataframe `full_data` in `with_null.Rdata` generated from part 1 to produce JSON file. We first sampled 800000 rows from `full_data` and store it as variable `samp`. We then used the SVM model to fit those data using function `svm(as.factor(knn) ~ Longitude + Latitude, data = Samp, cost= 10, gamma=2)`
+and plotted the polygons using the prediction function. The code is specified in `Svm_using_withnull.R`. 
 
 ```{r}
-source('graph2.R')
+source('Svm_using_withnull.R')
 plot(poly)
 ```
 
 
 **Part 3 visualization**
 
-We are interested in visualizing how different number of complaints is across each borough in an aggregation level, as the complaints are one of the most informative and important parts in the dataset, and we can use the previous data obtained to pinpoint where a specific complaint happened. Therefore, we draw a heatmap of total complaints in New York City using the library of ggmap and ggplot. We first use ggmap to load a map of New York City, then plot the heatmapuse using the paired longitude and latitude obtained from the previous data. The result shows that Brooklyn has the most complaints among the five boroughs. 
+We are interested in visualizing how different number of complaints is across each borough in an aggregation level, as the complaints are one of the most informative and important parts in the dataset, and we can use the previous data obtained to pinpoint where a specific complaint happened. Therefore, we draw a heatmap of total complaints in New York City using the library of ggmap and ggplot. We first use ggmap to load a map of New York City, then plot the heatmapuse using the paired longitude and latitude obtained from the previous data. The result shows that Brooklyn has the most complaints among the five boroughs and Staten Island has the least complaints. 
 
 ```{r}
 library('ggplot2')

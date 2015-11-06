@@ -309,7 +309,7 @@ pred = predict(svm_fit, pred_locs)
 # Create spatial polygons from SVM output and write to disk as GEOJSON file.
 r[] = pred
 poly = rasterToPolygons(r, dissolve=T)
-poly = poly[1:5,]
+poly = poly[2:6,]
 names(poly@data) = "Name"
 poly@data$Name = sort(levels(samp$knn)[-1])[c(2,1,3:5)]
 source('write_geojson.R')

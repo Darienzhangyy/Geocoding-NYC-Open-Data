@@ -18,10 +18,10 @@ r[]=NA
                   #"SI"="Staten Island")
 
 
-Samp <- full_data[sample(1:nrow(full_data), 20000, replace=FALSE),]
+Samp <- full_data[sample(1:nrow(full_data), 80000, replace=FALSE),]
 #SVM
 SvmNyc1 <- svm(as.factor(knn) ~ Longitude + Latitude, data = Samp,
-               cost= 30000, gamma=2)
+               cost= 10, gamma=2)
 
 
 
@@ -37,9 +37,9 @@ plot(r)
 
 library(rgeos)
 poly = rasterToPolygons(r,dissolve=TRUE)
+plot(poly)
 
-
-poly = poly[1:5,]
+poly = poly[2:6,]
 names(poly@data) = "Name"
 lev=sort(levels(Samp$knn)[-1])
 temp=lev[2]
