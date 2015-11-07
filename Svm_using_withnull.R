@@ -48,7 +48,7 @@ lev[1]=temp
 poly@data$Name = lev
 
 
-setwd("/home/grad/yz273/bootcamp/")
+#setwd("/home/grad/yz273/bootcamp/")
 source("write_geojson.R")
 write_geojson(poly,"boroughs.json")
 

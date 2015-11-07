@@ -41,7 +41,7 @@ plot(poly)
 
 We are interested in visualizing how different number of complaints is across each borough in an aggregation level, as the complaints are one of the most informative and important parts in the dataset, and we can use the previous data obtained to pinpoint where a specific complaint happened. Therefore, we draw a heatmap of total complaints in New York City using the library of ggmap and ggplot. We first use ggmap to load a map of New York City, then plot the heatmapuse using the paired longitude and latitude obtained from the previous data. The result shows that Brooklyn has the most complaints among the five boroughs and Staten Island has the least complaints. 
 
-```{r}
+```{r, eval=F}
 library('ggplot2')
 library('ggmap')
 
@@ -64,9 +64,14 @@ locationCrimes$long <- as.numeric(as.character(locationCrimes$long))
 locationCrimes$lat <- as.numeric(as.character(locationCrimes$lat))
 
 ## Plotting the location heatmap
-ggmap(NYC) + geom_tile(data = locationCrimes, aes(x = long, y = lat, alpha = Frequency),
-                           fill = 'red') + theme(axis.title.y = element_blank(), axis.title.x = element_blank())
-
+heatmap = ggmap(NYC) + 
+  geom_tile(data=locationCrimes, aes(x=long, y=lat, alpha=Frequency), fill='red') + 
+  theme(axis.title.y=element_blank(), axis.title.x=element_blank())
+save(file='heatmap.RData', heatmap)
 ```
 
+```{r}
+load('heatmap.RData')
+heatmap
+```
 
