@@ -5,7 +5,7 @@ date: "10/26/2015"
 output: pdf_document
 ---
 
-To clean the data in `nyc.311csv` as much as possible while keeping address information as complete as possible, we apply a combination of methods (subsetting, removing NA values, etc.) to `nyc`. We then apply gecoding approaches to the `intersection`, and `pluto.Rdata` and finally we merge data from these cleaned datasets and produce a graph of New York City. 
+To clean the data in `nyc.311csv` as much as possible while keeping address information as complete as possible, we apply a combination of methods (subsetting, removing NA values, etc.) to `nyc`. We then apply gecoding approaches to the `intersection`, and `pluto.Rdata` and finally we merge data from these cleaned datasets and produce a graph of New York City. The details are in `nyc.R`.
 
 To clean up the data, we extract columns from `nyc.311csv` file that contains `Unique.Key`, any column that contains `Address` and `Borough` and clean up those address columns as much as possible. We implement the following procedures: 
 
