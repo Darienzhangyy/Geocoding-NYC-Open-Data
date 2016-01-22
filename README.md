@@ -10,7 +10,7 @@ The data contains all 311 requests from all five boroughs of New York City betwe
 
 
 
-#Task 1 - Geocoding
+#1 - Geocoding
 
 The 311 data contains a large number of variables that we do not care about for the time being. For your first task you will need to geocode as much of the data as possible using the given variables. Note that this data has had minimal cleaning done, there are a large number of errors, omissions, and related issues. Also, note that there is a very large number of requests made, 10 million over the course of the last 5 years. Even under the most optimistic of circumstances you will not be able to, nor should you, use any of the standard web based geocoding services.
 
@@ -19,7 +19,7 @@ In order to be successful at this task you do not need to geocode every address,
 Your write up for this task should include a description of any and all cleaning / subsetting / etc. that was done to the data, as well as a description of your geocoding approach(es) and a discussion of how successful each was.
 
 
-#Task 2 - Recreating NYC’s Boroughs
+#2 - Recreating NYC’s Boroughs
 
 The primary goal of this assignment is to attempt to reconstruct the boundaries of the 5 city boroughs. The data set contains the column, Borough, that lists the borough in which the request ostensibly originated from. Your goal is to take this data along with the geocoded locations from Task 1 and generate a set of spatial polygons (in the GeoJSON format) that represents the boundary of these borough.
 
@@ -29,6 +29,6 @@ To make things more interesting I will be offering a extra credit for the team t
 
 For this task you are expected to produce a GeoJSON file called boroughs.json, for details on formatting see the hw_example repo. Your write up should include a discussion of your approaches to generating the boundaries and at least a simple visualization of your boundaries on top of the Manhattan borough boundaries.
 
-#Task 3 - Visualization
+#3 - Visualization
 
 The final task you will need to complete for this assignment is a novel visualization of the data - this will be left wholly open ended. The only constraint is that you are limited to only a single plot and you should make it as interesting and informative as possible (it does not need to involve geospatial data or the borough map). You should also include a brief writeup that describes how the visualization is constructed and why you chose this specific aspect of the data to visualize.
